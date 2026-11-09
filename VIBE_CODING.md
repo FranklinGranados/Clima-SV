@@ -1,16 +1,16 @@
-# Iteracion 1
+# Planificación: plan inicial
 Lee el archivo claude.md, ahí encontrarás el objetivo del proyecto junto con las rutas y las reglas a seguir. En todo el transcurso de la construcción de este proyecto, dale un vistazo a la estructura actual, ya que me encargué de crear el proyecto basado en next.js. Aparte de eso, necesito que crees un plan para la construcción dividido en iteraciones pequeñas. En las cuales yo tenga que aprobar y hacer commit de manera manual. Esto quiere decir que no utilizaremos el modo automático, sino el modo manual. Y cada vez que me indiques qué vas a realizar, por favor dame datos como qué archivos vas a crear o modificar con la ruta y qué hace cada uno y si es componente de servidor o componente de cliente. Y en el plan trata de incluir los tipos de TypeScript que se va a definir para la respuesta de OpenWeather. Y cómo funcionará el route handler que protege la API key, ya que está alojada en el .env.local. Esa trata de no leerla ni demostrarla. Ya tiene sus datos cargados para echarla a andar. La aplicación podrá listar en la raíz o página principal los 14 departamentos de El Salvador y tener diseño responsivo. Con sus ciudades de cada uno. Aún no vayas a aplicar cambios. Si hace falta información o más contexto, pregúntame antes de proponer el plan.
 
 # Decision
 Se degrado de cabecera y 6 ciudades a cabecera y 2 ciudades por departamento, debido a que son demasiadas consultas y se esta asegurando de evitar coordenadas inventadas. EL PLAN QUEDA MODIFICADO
 
-# Iteracion 2
+# Planificación: ajustes (2 ciudades y TanStack Query)
 Usemos tanstack query para precarga de datos
 
 # Decision
 Aceptamos instalar @tanstack/react-query@5.107.1 como dependencia
 
-# Iteracion 3 (Plan: Iteración 1 — Tipos y datos)
+# teración 1 — Tipos y datos
 ## Prompt
 apruebo el plan, comienza
 
@@ -28,4 +28,28 @@ apruebo el plan, comienza
 - Se agregaron `amanecer` y `atardecer` a `ClimaResumen`, que el plan no tenía. Hacen falta para el detalle del departamento (iteración 5).
 
 # Decision
+Revise las coordenadas de las 42 ciudades y las cabeceras, y las aprobé; la validación final con OpenWeather queda para la iteración 2
 
+# Iteración 2 — Capa de API segura y Route Handler
+## Prompt
+commit realizado, continua
+
+## Qué hizo Claude
+- Creó `src/lib/openweather.ts` (solo servidor, con `import "server-only"`). Es el único archivo que lee `OPENWEATHER_API_KEY`. Tiene:
+  - `getClimaActual`, `getClimaDepartamento` y `getPronostico`, con `'use cache'` + `cacheLife({ revalidate: 600 })`.
+  - La clase `OpenWeatherError`, que solo guarda el código HTTP y el endpoint, nunca la URL.
+- Creó `src/lib/pronostico.ts`: `agruparPorDia`, que convierte los bloques de 3 h en días locales de El Salvador.
+- Creó `src/app/api/clima/[departamento]/route.ts`:
+  - `GET` con lista blanca de slugs: 404 si no existe y 502 con un mensaje en español si falla OpenWeather.
+  - `console.error` sin datos sensibles.
+- Pruebas con `curl`: `/api/clima/xyz` → 404 y `/api/clima/san-salvador` → 200. La palabra "appid" aparece 0 veces en las respuestas y 0 en el log del servidor.
+- Validó las 42 coordenadas con un campo temporal `nombreOW` (el `name` de OpenWeather) y lo quitó al terminar.
+- Al levantar `npm run dev`, Next 16 generó por su cuenta un archivo `AGENTS.md`, por la opción `experimental.agentFeedback` de `next.config.ts`.
+
+## Problemas
+- Desafío: 5 de 42 ciudades no coincidían con el nombre que devuelve OpenWeather.
+- Investigación: pedí una tabla con las distancias, contrastada con OpenStreetMap.
+- Decisión: corregí San Salvador (estaba desviada unos 3 km) y acepté las otras 4, porque estaban a menos de 0.5 km del centro: el nombre distinto se debe al etiquetado de OpenWeather, no a un error de coordenadas.
+
+# Decision
+Se corrigio la coordenada para san salvador y las otras 4 se determinaron como revisadas a mano

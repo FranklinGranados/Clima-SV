@@ -50,6 +50,7 @@ export const DEPARTAMENTOS: readonly Departamento[] = [
     cabecera: { nombre: "Chalatenango", lat: 14.0333, lon: -88.9333 },
     ciudades: [
       { nombre: "Nueva Concepción", lat: 14.1333, lon: -89.3 },
+      // Revisada a mano: a 0.4 km del centro; OpenWeather la etiqueta "Llano de La Virgen".
       { nombre: "La Palma", lat: 14.3167, lon: -89.1667 },
     ],
   },
@@ -67,7 +68,8 @@ export const DEPARTAMENTOS: readonly Departamento[] = [
     slug: "san-salvador",
     nombre: "San Salvador",
     zona: "central",
-    cabecera: { nombre: "San Salvador", lat: 13.6929, lon: -89.2182 },
+    // Corregida en la iteración 2: la anterior quedaba ~3 km al oeste (Antiguo Cuscatlán).
+    cabecera: { nombre: "San Salvador", lat: 13.6976, lon: -89.1912 },
     ciudades: [
       { nombre: "Soyapango", lat: 13.71, lon: -89.1394 },
       { nombre: "Apopa", lat: 13.8072, lon: -89.1792 },
@@ -80,6 +82,7 @@ export const DEPARTAMENTOS: readonly Departamento[] = [
     cabecera: { nombre: "Cojutepeque", lat: 13.7167, lon: -88.9333 },
     ciudades: [
       { nombre: "Suchitoto", lat: 13.9381, lon: -89.0278 },
+      // Revisada a mano: a 0.5 km del centro; OpenWeather la etiqueta "Tecoluca" (cantón).
       { nombre: "San Pedro Perulapán", lat: 13.7667, lon: -89.0333 },
     ],
   },
@@ -111,6 +114,7 @@ export const DEPARTAMENTOS: readonly Departamento[] = [
     zona: "paracentral",
     cabecera: { nombre: "San Vicente", lat: 13.6333, lon: -88.8 },
     ciudades: [
+      // Revisada a mano: a 0.5 km del centro; OpenWeather devuelve "Departamento de San Vicente".
       { nombre: "Tecoluca", lat: 13.5333, lon: -88.7833 },
       { nombre: "Apastepeque", lat: 13.6667, lon: -88.75 },
     ],
@@ -141,8 +145,10 @@ export const DEPARTAMENTOS: readonly Departamento[] = [
     slug: "morazan",
     nombre: "Morazán",
     zona: "oriental",
+    // Revisada a mano: OpenWeather usa el nombre oficial "San Francisco".
     cabecera: { nombre: "San Francisco Gotera", lat: 13.7, lon: -88.1 },
     ciudades: [
+      // Revisada a mano: a 0.1 km del centro; OpenWeather la etiqueta "La Chorrera".
       { nombre: "Perquín", lat: 13.9581, lon: -88.1622 },
       { nombre: "Jocoro", lat: 13.6167, lon: -88.0167 },
     ],
