@@ -1,26 +1,47 @@
 @import "tailwindcss";
 
+/*
+ * Paleta de Clima SV.
+ * Las variables de :root cambian con el modo oscuro del sistema y @theme las
+ * expone como utilidades de Tailwind (bg-fondo, text-primario, border-borde...).
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --fondo: #f1f6fb;
+  --superficie: #ffffff;
+  --superficie-alta: #e6eef7;
+  --borde: #d5e0ec;
+  --texto: #0f2233;
+  --texto-suave: #4b6074;
+  --primario: #0b6bcb; /* azul cielo de la bandera */
+  --acento: #f59e0b; /* sol */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --fondo: #0b1520;
+    --superficie: #122130;
+    --superficie-alta: #1b2e42;
+    --borde: #24384d;
+    --texto: #e7eef6;
+    --texto-suave: #9fb2c5;
+    --primario: #5aaefc;
+    --acento: #fbbf24;
   }
 }
 
+@theme inline {
+  --color-fondo: var(--fondo);
+  --color-superficie: var(--superficie);
+  --color-superficie-alta: var(--superficie-alta);
+  --color-borde: var(--borde);
+  --color-texto: var(--texto);
+  --color-texto-suave: var(--texto-suave);
+  --color-primario: var(--primario);
+  --color-acento: var(--acento);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
 }

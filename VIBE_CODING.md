@@ -53,3 +53,25 @@ commit realizado, continua
 
 # Decision
 Se corrigio la coordenada para san salvador y las otras 4 se determinaron como revisadas a mano
+
+# Iteración 3 — Layout, navegación y /acerca
+## Prompt
+lee CLAUDE.md, PLAN.md y PROGRESO.md y continúa con la iteración 3
+
+## Qué hizo Claude
+- Cambió el layout raíz a español (`lang="es"`, metadata con plantilla de título) y agregó Header y Footer.
+- Definió la paleta en `globals.css` con variables CSS (modo claro y oscuro) expuestas a Tailwind con `@theme`.
+- Creó `Header` (servidor), `MenuMovil` (cliente, `useState` + `useEffect` para cerrar con Escape), `EnlaceNav` (cliente, resalta la ruta activa) y `Footer` (servidor).
+- Creó `src/lib/navegacion.ts` con la lista única de enlaces.
+- Creó `/acerca` (estática) y `not-found.tsx` en español.
+- Verificación: `tsc`, `eslint` y `next build` sin errores; con `next start`, `/` y `/acerca` dan 200 y una ruta inexistente da 404 con la página en español.
+
+## Problemas
+- Con `cacheComponents: true`, la doc de Next 16.4 avisa que `usePathname` puede suspender en rutas con params dinámicos y romper el build. Se envolvieron los enlaces activos en `<Suspense>` con un enlace sin resaltar como fallback.
+- Se evitó `new Date()` en el Footer para no volver dinámico el layout.
+- Se agregaron 2 archivos fuera del plan (`EnlaceNav.tsx` y `navegacion.ts`) para no duplicar los enlaces entre el Header y el menú móvil.
+- `/comparar` todavía da 404: se crea en la iteración 7.
+
+
+# Decision
+Se aprobo a claude realizar pruebas con las paginas nuevas
