@@ -135,3 +135,28 @@ considero que no es necesario extender las temperaturas en Ver ciudades y las pr
 
 # Decision
 se aceptaron los cambios, no hay observaciones
+
+# Iteración 7 — /comparar (hasta 4 departamentos)
+## Prompt
+si cumple y pasa la prueba sobre el desplazamiento de las pestañas, continua
+
+## Qué hizo Claude
+- Creó `/comparar` (servidor, estática), que le pasa al cliente solo los nombres y slugs de los departamentos.
+- Creó `Comparador` (cliente):
+  - Chips con precarga al pasar el puntero, máximo 4.
+  - `useState` con la selección inicial leída de `?d=` y validada contra la lista blanca.
+  - `useEffect` que escribe la selección en la URL con `history.replaceState`.
+  - `useQueries` con la misma query key que la home.
+- Creó `TablaComparativa`: tabla en escritorio y tarjetas en móvil, con ▲ para el valor más alto y ▼ para el más bajo.
+- Creó `loading.tsx` y `error.tsx` de /comparar.
+- Verificación: `tsc`, `eslint` y `build` sin errores; `/comparar` responde 200, la API responde para 4 departamentos y "appid" no aparece en el HTML ni en `.next/static`.
+
+## Problemas
+- El primer build falló por un timeout de red hacia OpenWeather al prerenderizar Santa Ana; al reintentar pasó. Esto muestra que el build depende de que la API responda.
+- Para no usar `setState` dentro de un efecto (la regla de eslint lo marca), la URL se lee solo al crear el estado y el efecto solo escribe en ella.
+- Una constante exportada desde un archivo `"use client"` llegaría al servidor como referencia y no como valor; se dejó sin exportar.
+
+# Decision
+se aceptaron los cambios, no se encuentran observaciones ni alucinaciones
+
+

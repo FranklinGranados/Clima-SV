@@ -2,9 +2,9 @@
 
 Plan completo en [PLAN.md](PLAN.md). Reglas en [CLAUDE.md](CLAUDE.md).
 
-> **Punto de retorno (2026-11-09):** iteraciones 1–5 con commit (`e60aef4`); iteración 6 terminada, **pendiente de commit**.
-> Siguiente: **iteración 7** (/comparar, hasta 4 departamentos).
-> Para retomar en una sesión nueva: "lee CLAUDE.md, PLAN.md y PROGRESO.md y continúa con la iteración 7".
+> **Punto de retorno (2026-11-09):** iteraciones 1–6 con commit (`9918598`); iteración 7 terminada, **pendiente de commit**.
+> Siguiente: **iteración 8** (pulido, README y build final).
+> Para retomar en una sesión nueva: "lee CLAUDE.md, PLAN.md y PROGRESO.md y continúa con la iteración 8".
 
 | # | Iteración | Estado |
 |---|---|---|
@@ -13,8 +13,8 @@ Plan completo en [PLAN.md](PLAN.md). Reglas en [CLAUDE.md](CLAUDE.md).
 | 3 | Layout, navegación y /acerca | ✅ Hecha (commit `03b055e`) |
 | 4 | Página principal + TanStack Query (precarga al pasar el puntero) | ✅ Hecha (commit `20fe89e`) |
 | 5 | /departamento/[nombre] | ✅ Hecha (commit `e60aef4`) |
-| 6 | /departamento/[nombre]/pronostico | ✅ Hecha (pendiente de commit) |
-| 7 | /comparar (hasta 4) | ⏳ Pendiente |
+| 6 | /departamento/[nombre]/pronostico | ✅ Hecha (commit `9918598`) |
+| 7 | /comparar (hasta 4) | ✅ Hecha (pendiente de commit) |
 | 8 | Pulido, README y build final | ⏳ Pendiente |
 
 ---
@@ -176,5 +176,39 @@ El campo temporal `nombreOW` se quitó de `ClimaResumen` y de `openweather.ts` a
 
 ### Pendiente / notas
 - La primera visita a cada pronóstico muestra el skeleton un momento mientras llega la llamada; las siguientes (10 min) salen del caché.
-- Falta revisar en el navegador las pestañas en móvil (scroll horizontal) y escritorio.
+- ~~Falta revisar las pestañas en el navegador~~: el usuario confirmó que el desplazamiento horizontal en móvil funciona.
 - `src/lib/departamentos.ts`: el commit `e60aef4` incluyó la coordenada de San Salvador `13.6929, -89.2182`; en la copia de trabajo el usuario ya la devolvió a la corregida `13.6976, -89.1912` (entra en el próximo commit).
+
+---
+
+## Iteración 7 — /comparar, hasta 4 departamentos (2026-11-09)
+
+### Hecho
+- `src/app/comparar/page.tsx` (servidor, estática): título, explicación de ▲/▼, selector °C/°F y el `Comparador` dentro de `<Suspense>`. Le pasa al cliente solo `slug` y `nombre` de los 14 departamentos (sin clima).
+- `src/components/Comparador.tsx` (**cliente**):
+  - `useState` con la selección. El valor inicial sale de `?d=a,b` (`useSearchParams`), validado contra la lista blanca, sin repetidos y con un máximo de 4.
+  - `useEffect` escribe la selección en la URL con `history.replaceState`, así el enlace se puede compartir.
+  - Chips con `usePrefetchHover` (precarga al pasar el puntero, enfocar o tocar), `aria-pressed`, 44 px de alto y `flex-wrap`. Se deshabilitan al llegar a 4.
+  - `useQueries` con la misma query key que la home (`['clima', slug]`). Muestra la carga, un aviso de error con los departamentos que fallaron y "Reintentar", y el botón "Limpiar selección".
+- `src/components/TablaComparativa.tsx` (sin hooks): tabla desde `md:` y tarjetas apiladas en móvil. Compara 6 métricas de la cabecera (temperatura, sensación, mín., máx., humedad y viento). Marca el valor más alto (▲, naranja) y el más bajo (▼, celeste) con texto para lectores de pantalla.
+- `src/app/comparar/loading.tsx` (servidor) y `src/app/comparar/error.tsx` (**cliente**, usa `MensajeError`).
+
+### Verificación
+- `tsc` ✅, `eslint` ✅, `next build` ✅ (`/comparar` estática).
+- Con `next start`: `/comparar?d=santa-ana,la-union,xyz` responde 200 con su título y el enlace "Comparar" del menú marcado como activo. `/api/clima/<slug>` responde 200 para los 4 departamentos probados (~0.1 s desde el caché). "appid" aparece 0 veces en el HTML y en `.next/static`.
+
+### Cambios respecto al plan
+- La URL se lee con `useSearchParams` solo para el estado inicial, y el `useEffect` solo **escribe** en la URL. Así no hay `setState` dentro de un efecto, y `useSearchParams` va en `<Suspense>` como pide la doc de Next con `cacheComponents`.
+- `SelectorUnidad` se agregó también en /comparar.
+- `MAX_COMPARAR` no se exporta desde el archivo `"use client"`: si un Server Component lo importara, recibiría una referencia de cliente y no el número.
+
+### Problemas
+- El primer `next build` falló con un `ConnectTimeoutError` a `api.openweathermap.org` al prerenderizar `/departamento/santa-ana`: un corte de red momentáneo, no un error de código. El segundo build pasó. **Riesgo:** como el detalle se prerenderiza en el build, si OpenWeather no responde, el build falla. Se puede evaluar en la iteración 8.
+
+### Pendiente / notas
+- **Falta probar en el navegador:**
+  1. Elegir hasta 4 chips; el 5.º debe quedar deshabilitado.
+  2. La URL debe cambiar a `?d=…`, y al recargar o abrir ese enlace en otra pestaña debe aparecer la misma selección.
+  3. `?d=xyz` debe ignorarse sin errores.
+  4. Al pasar el puntero sobre un chip debe salir un `GET /api/clima/<slug>`, y al seleccionarlo no debe repetirse.
+  5. Debe verse la tabla en escritorio y las tarjetas en móvil, con ▲/▼ correctos.

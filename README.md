@@ -1,36 +1,125 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ⛅ Clima SV
 
-## Getting Started
+Aplicación web que muestra el **clima actual y el pronóstico de 5 días de los 14 departamentos de El Salvador**, con datos de [OpenWeather](https://openweathermap.org/). Por cada departamento se consulta su cabecera y 2 ciudades más (42 ciudades en total). La interfaz está en español y se adapta a móvil y escritorio.
 
-First, run the development server:
+Proyecto de la tarea de la semana 21 del Bootcamp Full Stack Junior (UTEC).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Páginas
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+| Ruta | Qué muestra |
+|---|---|
+| `/` | Los 14 departamentos agrupados por zona, con la temperatura actual de su cabecera. Tiene un buscador por departamento o ciudad y un botón **"Ver ciudades"**, que precarga el clima de las otras 2 ciudades al pasar el puntero. |
+| `/departamento/[nombre]` | Detalle del departamento: temperatura, sensación térmica, humedad, viento, mínima y máxima, amanecer y atardecer de la cabecera, más el clima de sus 2 ciudades. Permite cambiar entre °C y °F, y la preferencia se recuerda. Ejemplo: `/departamento/san-salvador`. |
+| `/departamento/[nombre]/pronostico` | Pronóstico de 5 días en pestañas, con bloques de 3 horas en hora de El Salvador. Ejemplo: `/departamento/san-salvador/pronostico`. |
+| `/comparar` | Compara hasta 4 departamentos lado a lado y marca el valor más alto (▲) y el más bajo (▼). La selección queda en la URL (`/comparar?d=santa-ana,la-union`), así el enlace se puede compartir. |
+| `/acerca` | Información del proyecto, tecnologías y fuente de los datos. |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Además, la app tiene una página 404 en español, pantallas de carga (`loading.tsx`) y mensajes de error con un botón para reintentar (`error.tsx`).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Tecnologías
 
-## Learn More
+- **[Next.js 16](https://nextjs.org/)** con App Router y Cache Components (`'use cache'` + `cacheLife`). Combina Server Components y Client Components.
+- **React 19**: `useState` y `useEffect` en los componentes de cliente.
+- **TypeScript** en modo estricto, con tipos para las respuestas de la API.
+- **Tailwind CSS 4**, con diseño responsive mobile-first y modo oscuro según el sistema.
+- **[TanStack Query 5](https://tanstack.com/query)**: precarga y caché en el navegador para "Ver ciudades" y `/comparar`.
+- **[OpenWeather API](https://openweathermap.org/api)** (plan gratuito): `/data/2.5/weather` y `/data/2.5/forecast`, con `units=metric` y `lang=es`.
 
-To learn more about Next.js, take a look at the following resources:
+## Requisitos
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **[Node.js](https://nodejs.org/) 20.9 o superior** (lo exige Next.js 16). Se probó con Node 22.
+- **Una API key gratuita de OpenWeather**:
+  1. Crea una cuenta en [openweathermap.org](https://home.openweathermap.org/users/sign_up).
+  2. Copia tu clave desde [API keys](https://home.openweathermap.org/api_keys).
+  3. Una clave nueva puede tardar un rato (hasta un par de horas) en activarse. Mientras tanto, la API responde `401`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Instalación local
 
-## Deploy on Vercel
+1. **Clona el repositorio** y entra en la carpeta:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+   ```bash
+   git clone <URL-del-repositorio>
+   cd clima-sv
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+2. **Instala las dependencias:**
+
+   ```bash
+   npm install
+   ```
+
+3. **Configura la API key.** Copia el archivo de ejemplo:
+
+   ```bash
+   # macOS / Linux / Git Bash
+   cp .env.example .env.local
+
+   # Windows (PowerShell)
+   Copy-Item .env.example .env.local
+   ```
+
+   Abre `.env.local` y reemplaza el valor de ejemplo por tu clave:
+
+   ```env
+   OPENWEATHER_API_KEY=tu_clave_aqui
+   ```
+
+   > El nombre de la variable debe ser exactamente `OPENWEATHER_API_KEY` y **no** debe empezar con `NEXT_PUBLIC_`.
+   > `.env.local` está en `.gitignore`: nunca se sube al repositorio.
+
+4. **Levanta el servidor de desarrollo:**
+
+   ```bash
+   npm run dev
+   ```
+
+   Abre [http://localhost:3000](http://localhost:3000).
+
+### Otros comandos
+
+| Comando | Qué hace |
+|---|---|
+| `npm run build` | Compila la versión de producción. Durante el build se consultan las cabeceras y ciudades para prerenderizar las páginas, así que **necesita la API key y conexión a internet**. |
+| `npm run start` | Sirve la versión compilada (después de `npm run build`). |
+| `npm run lint` | Revisa el código con ESLint. |
+
+## Despliegue en Vercel
+
+1. Sube el proyecto a un repositorio de GitHub, GitLab o Bitbucket.
+2. En [vercel.com/new](https://vercel.com/new), **importa el repositorio**. Vercel detecta Next.js solo: no hace falta cambiar el comando de build ni la carpeta de salida.
+   - Si el repositorio contiene más carpetas además de `clima-sv`, elige `clima-sv` en **Root Directory**.
+3. **Antes de presionar "Deploy"**, abre **Environment Variables** y agrega:
+
+   | Key | Value |
+   |---|---|
+   | `OPENWEATHER_API_KEY` | tu clave de OpenWeather |
+
+   Márcala para los entornos *Production* y *Preview*.
+   Esto es obligatorio **antes del primer deploy**: el build prerenderiza páginas con datos del clima y falla si la clave no existe.
+4. Presiona **Deploy**.
+
+Si agregas o cambias la variable después, haz un **Redeploy** desde el panel de Vercel para que el cambio se aplique.
+
+## Despliegue
+
+- **URL pública:** _pendiente_
+
+## Seguridad de la API key
+
+- La clave **solo se usa en el servidor**. El único archivo que la lee es [`src/lib/openweather.ts`](src/lib/openweather.ts), que importa `server-only`: si un componente de cliente intentara importarlo, el build fallaría.
+- El navegador nunca habla con OpenWeather. Llama a la ruta propia `/api/clima/[departamento]` (un Route Handler), que:
+  - solo acepta los 14 departamentos de una lista blanca (no recibe coordenadas ni texto libre);
+  - devuelve datos ya procesados, sin la URL ni la clave.
+- Los errores se registran en el servidor solo con el código HTTP y el endpoint, nunca con la URL completa (que contiene la clave).
+- Las respuestas se guardan en caché 10 minutos, para no pasarse del límite del plan gratuito (60 llamadas por minuto).
+
+## Proceso de desarrollo
+
+Este proyecto se construyó con *vibe coding*, en iteraciones aprobadas una por una. El proceso completo está en **[VIBE_CODING.md](VIBE_CODING.md)**: los prompts, lo que hizo la IA, los problemas que surgieron y las decisiones tomadas.
+
+El avance por iteración está en [PROGRESO.md](PROGRESO.md) y el plan original en [PLAN.md](PLAN.md).
+
+## Créditos
+
+- Datos meteorológicos: [OpenWeather](https://openweathermap.org/).
+- Los nombres de las ciudades son los tradicionales de los municipios. Desde la reforma territorial de 2024 se llaman «distritos».
