@@ -2,9 +2,8 @@
 
 Plan completo en [PLAN.md](PLAN.md). Reglas en [CLAUDE.md](CLAUDE.md).
 
-> **Punto de retorno (2026-11-09):** iteraciones 1–6 con commit (`9918598`); iteración 7 terminada, **pendiente de commit**.
-> Siguiente: **iteración 8** (pulido, README y build final).
-> Para retomar en una sesión nueva: "lee CLAUDE.md, PLAN.md y PROGRESO.md y continúa con la iteración 8".
+> **Punto de retorno (2026-11-09):** iteraciones 1–7 con commit (`a59039b`, ya en GitHub: `FranklinGranados/Clima-SV`). Iteración 8: documentación hecha, **pendiente de commit**. Falta el pulido opcional.
+> Para retomar en una sesión nueva: "lee CLAUDE.md, PLAN.md y PROGRESO.md y continúa con el pulido de la iteración 8".
 
 | # | Iteración | Estado |
 |---|---|---|
@@ -14,8 +13,8 @@ Plan completo en [PLAN.md](PLAN.md). Reglas en [CLAUDE.md](CLAUDE.md).
 | 4 | Página principal + TanStack Query (precarga al pasar el puntero) | ✅ Hecha (commit `20fe89e`) |
 | 5 | /departamento/[nombre] | ✅ Hecha (commit `e60aef4`) |
 | 6 | /departamento/[nombre]/pronostico | ✅ Hecha (commit `9918598`) |
-| 7 | /comparar (hasta 4) | ✅ Hecha (pendiente de commit) |
-| 8 | Pulido, README y build final | ⏳ Pendiente |
+| 7 | /comparar (hasta 4) | ✅ Hecha (commit `a59039b`) |
+| 8 | Pulido, README y build final | 🟡 README hecho (pendiente de commit); pulido pendiente |
 
 ---
 
@@ -212,3 +211,22 @@ El campo temporal `nombreOW` se quitó de `ClimaResumen` y de `openweather.ts` a
   3. `?d=xyz` debe ignorarse sin errores.
   4. Al pasar el puntero sobre un chip debe salir un `GET /api/clima/<slug>`, y al seleccionarlo no debe repetirse.
   5. Debe verse la tabla en escritorio y las tarjetas en móvil, con ▲/▼ correctos.
+- ✅ El usuario confirmó que /comparar funciona bien.
+
+---
+
+## Iteración 8 — Documentación (2026-11-09)
+
+### Hecho
+- `README.md` en español: descripción, tabla de páginas, tecnologías, requisitos (Node 20.9 o superior y la API key gratuita), instalación local, comandos y seguridad de la API key. La URL pública está pendiente y hay enlaces a `VIBE_CODING.md`, `PROGRESO.md` y `PLAN.md`.
+- Despliegue en Vercel paso a paso: `git push` → iniciar sesión con GitHub → **Add New… → Project** → **Import Git Repository** → **Environment Variables** (Key `OPENWEATHER_API_KEY`, Value = la clave) → **Deploy**. Incluye qué hacer si el repositorio no aparece y los errores comunes.
+- `git clone https://github.com/FranklinGranados/Clima-SV.git` + `cd Clima-SV` (el repositorio se renombró de `Clima-SV-` a `Clima-SV`). El proyecto está en la raíz del repositorio, así que no hay que cambiar *Root Directory* en Vercel.
+- Paso 0 para Vercel: el dueño hace `git push`; cualquier otra persona hace un **fork** en GitHub, porque Vercel solo lista los repositorios de la cuenta con la que se inicia sesión (`git fetch` no sirve para eso).
+- `VIBE_CODING.md`: entrada de la iteración 8 y la sección "Desafíos y decisiones del proyecto" (coordenadas, build que depende de la API, regla de ESLint, `web.config` frente a la clave protegida).
+
+### Pendiente (pulido opcional, a decisión del usuario)
+1. Borrar los 5 `.svg` de la plantilla en `public/`, que no se usan.
+2. `proxy.ts` para que un slug inexistente responda HTTP 404 real (hoy muestra la página 404 con estado 200).
+3. Que el build no dependa de OpenWeather (por ejemplo, generar el detalle bajo demanda como el pronóstico).
+4. Revisión final de accesibilidad (contraste y foco).
+5. Poner la URL pública en el README después del primer deploy.

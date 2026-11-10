@@ -2,7 +2,7 @@
 
 Aplicación web que muestra el **clima actual y el pronóstico de 5 días de los 14 departamentos de El Salvador**, con datos de [OpenWeather](https://openweathermap.org/). Por cada departamento se consulta su cabecera y 2 ciudades más (42 ciudades en total). La interfaz está en español y se adapta a móvil y escritorio.
 
-Proyecto de la tarea de la semana 21 del Bootcamp Full Stack Junior (UTEC).
+Proyecto de la tarea de la semana 21 del Bootcamp Full Stack Junior.
 
 ## Páginas
 
@@ -38,9 +38,11 @@ Además, la app tiene una página 404 en español, pantallas de carga (`loading.
 1. **Clona el repositorio** y entra en la carpeta:
 
    ```bash
-   git clone <URL-del-repositorio>
-   cd clima-sv
+   git clone https://github.com/FranklinGranados/Clima-SV.git
+   cd Clima-SV
    ```
+
+   > Para correrlo en tu computadora basta con clonar: no necesitas cuenta de GitHub ni hacer fork.
 
 2. **Instala las dependencias:**
 
@@ -85,20 +87,58 @@ Además, la app tiene una página 404 en español, pantallas de carga (`loading.
 
 ## Despliegue en Vercel
 
-1. Sube el proyecto a un repositorio de GitHub, GitLab o Bitbucket.
-2. En [vercel.com/new](https://vercel.com/new), **importa el repositorio**. Vercel detecta Next.js solo: no hace falta cambiar el comando de build ni la carpeta de salida.
-   - Si el repositorio contiene más carpetas además de `clima-sv`, elige `clima-sv` en **Root Directory**.
-3. **Antes de presionar "Deploy"**, abre **Environment Variables** y agrega:
+Vercel no lee tu computadora: importa el proyecto **desde un repositorio de tu cuenta de GitHub**. La lista **Import Git Repository** solo muestra los repositorios de la cuenta con la que iniciaste sesión, así que el repositorio de otra persona no aparece ahí.
 
-   | Key | Value |
+### Paso 0: tener el repositorio en tu cuenta de GitHub
+
+**Si eres el dueño del repositorio** (`FranklinGranados/Clima-SV`): solo asegúrate de haber subido los últimos cambios.
+
+```bash
+git push origin master
+```
+
+**Si eres otra persona**, primero haz un **fork**, es decir, una copia del repositorio en tu propia cuenta:
+
+1. Inicia sesión en [github.com](https://github.com/).
+2. Abre [github.com/FranklinGranados/Clima-SV](https://github.com/FranklinGranados/Clima-SV).
+3. Presiona **Fork** (arriba a la derecha) y luego **Create fork**.
+4. Ahora tienes `tu-usuario/Clima-SV` en tu cuenta. Ese es el que vas a importar en Vercel.
+
+> Si más adelante quieres traer a tu fork los cambios nuevos del repositorio original, usa el botón **Sync fork** en la página de tu fork. Vercel vuelve a desplegar solo.
+
+### Pasos en Vercel
+
+1. **Inicia sesión** en [vercel.com](https://vercel.com/) con **Continue with GitHub**, usando la misma cuenta donde está tu repositorio o tu fork, y autoriza a Vercel.
+2. En el panel, presiona **Add New…** y elige **Project**.
+3. En la sección **Import Git Repository**, busca `Clima-SV` (el de tu cuenta) y presiona **Import**.
+   - Si no aparece, presiona **Adjust GitHub App Permissions** (o *Configure GitHub App*) y dale acceso a ese repositorio. Luego vuelve a la lista.
+4. En **Configure Project** deja los valores que Vercel detecta: *Framework Preset* **Next.js** y *Root Directory* `./` (el proyecto está en la raíz del repositorio). No hace falta cambiar el comando de build ni la carpeta de salida.
+5. Despliega la sección **Environment Variables** y agrega la clave. El archivo [`.env.example`](.env.example) tiene esta línea:
+
+   ```env
+   OPENWEATHER_API_KEY=tu_clave_aqui
+   ```
+
+   En Vercel se separa en dos campos:
+
+   | Campo | Qué pegar |
    |---|---|
-   | `OPENWEATHER_API_KEY` | tu clave de OpenWeather |
+   | **Key** | `OPENWEATHER_API_KEY` (solo el nombre, **sin** el signo `=`) |
+   | **Value** | tu API key de OpenWeather, la que generaste en [API keys](https://home.openweathermap.org/api_keys) |
 
-   Márcala para los entornos *Production* y *Preview*.
-   Esto es obligatorio **antes del primer deploy**: el build prerenderiza páginas con datos del clima y falla si la clave no existe.
-4. Presiona **Deploy**.
+   Presiona **Add**.
 
-Si agregas o cambias la variable después, haz un **Redeploy** desde el panel de Vercel para que el cambio se aplique.
+   > ⚠️ Este paso es obligatorio **antes del primer deploy**. El build prerenderiza páginas con datos del clima y falla si la clave no existe.
+   > Pega la clave solo en Vercel: nunca en `.env.example`, en el código ni en un commit.
+
+6. Presiona **Deploy** y espera a que termine el build (1 o 2 minutos). Vercel te muestra la URL pública, del tipo `https://clima-sv.vercel.app/`.
+
+### Después del primer deploy
+
+- Cada `git push` a la rama principal genera un nuevo deploy automático.
+- Si agregas o cambias la variable después (en **Settings → Environment Variables**), haz un **Redeploy** desde la pestaña **Deployments** para que se aplique.
+- Si el build falla con `Falta la variable de entorno OPENWEATHER_API_KEY`, revisa que el nombre de la variable esté bien escrito.
+- Si falla con `401`, la clave es incorrecta o todavía no se activa.
 
 ## Despliegue
 

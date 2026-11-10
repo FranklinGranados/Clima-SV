@@ -10,7 +10,7 @@ Usemos tanstack query para precarga de datos
 # Decision
 Aceptamos instalar @tanstack/react-query@5.107.1 como dependencia
 
-# teración 1 — Tipos y datos
+# Iteración 1 — Tipos y datos
 ## Prompt
 apruebo el plan, comienza
 
@@ -49,7 +49,8 @@ commit realizado, continua
 ## Problemas
 - Desafío: 5 de 42 ciudades no coincidían con el nombre que devuelve OpenWeather.
 - Investigación: pedí una tabla con las distancias, contrastada con OpenStreetMap.
-- Decisión: corregí San Salvador (estaba desviada unos 3 km) y acepté las otras 4, porque estaban a menos de 0.5 km del centro: el nombre distinto se debe al etiquetado de OpenWeather, no a un error de coordenadas.
+- Decisión: corregí San Salvador (estaba desviada unos 3 km) 
+
 
 # Decision
 Se corrigio la coordenada para san salvador y las otras 4 se determinaron como revisadas a mano
@@ -157,6 +158,56 @@ si cumple y pasa la prueba sobre el desplazamiento de las pestañas, continua
 - Una constante exportada desde un archivo `"use client"` llegaría al servidor como referencia y no como valor; se dejó sin exportar.
 
 # Decision
-se aceptaron los cambios, no se encuentran observaciones ni alucinaciones
+Use modo automático solo para /comparar porque era UI y no tocaba la API key. 
+Antes del commit revisé con git diff que openweather.ts y route.ts no cambiaran.
+
+# Iteración 8 — Documentación (README)
+## Prompt
+Escribe el README.md en español. Debe incluir:
+- Descripción breve de la app y captura o lista de sus páginas
+- Tecnologías usadas
+- Requisitos (Node.js y una API key gratuita de OpenWeather)
+- Instalación local: clonar, npm install, copiar .env.example a .env.local
+  y poner la key, npm run dev
+- Despliegue en Vercel: importar el repo y agregar OPENWEATHER_API_KEY
+  en Environment Variables antes del primer deploy
+- Sección "Despliegue" con la URL pública (déjala como pendiente por ahora)
+- Enlace a VIBE_CODING.md, donde está el proceso de vibe coding
+- Nota de seguridad: la API key solo se usa en el servidor
+No toques ningún otro archivo.
+
+## Qué hizo Claude
+- Reemplazó el README de la plantilla por uno en español con: descripción, tabla de las 5 páginas, tecnologías, requisitos (Node 20.9 o superior, verificado en el `package.json` de Next 16, y la API key gratuita), instalación local (con el comando de copia para Bash y para PowerShell), comandos, despliegue en Vercel, URL pública pendiente, seguridad de la API key y enlace a este archivo.
+- En un segundo prompt agregó los pasos de Vercel tal como los sigo yo: iniciar sesión con GitHub → **Add New… → Project** → **Import Git Repository** → **Environment Variables** (Key `OPENWEATHER_API_KEY` sin el `=`, Value = la API key) → **Deploy**.
+- Aclaró que para que el repositorio aparezca en Vercel hay que **subirlo con `git push`** (no `git fetch`, que solo descarga) y, si no aparece, dar permiso a la GitHub App de Vercel.
+- Corrigió el `cd` del README para que coincida con la carpeta que crea `git clone`. Después, cuando renombré el repositorio de `Clima-SV-` a `Clima-SV`, reconstruyó el README con el nombre nuevo. Comprobó que el proyecto está en la raíz del repo, así que en Vercel no hay que cambiar *Root Directory*.
+- Ante mi duda de si otras personas tendrían que hacer `git fetch` a mi repositorio para verlo en Vercel, explicó que no: Vercel solo lista los repositorios de la cuenta propia, así que lo que hace falta es un **fork**. Lo agregó como "Paso 0" del despliegue, con el botón **Sync fork** para traer cambios nuevos.
+
+## Problemas
+- No hay navegador en la sesión para tomar capturas; se usó una tabla con las páginas.
+- El `cd` del README no coincidía con el nombre de la carpeta que crea `git clone`.
+
+# Decision
+Renombré el repositorio de Clima-SV- a Clima-SV porque Vercel daba problemas con el guion final, y desplegué con OPENWEATHER_API_KEY configurada antes del primer deploy.” Con eso también queda registrado el despliegue.
+
+# Desafíos y decisiones del proyecto
+
+## 1. El desfase de coordenadas
+Al validar las 42 ciudades contra el campo `name` de OpenWeather, 6 no coincidían. La cabecera de San Salvador estaba desviada unos 3 km y OpenWeather la reconocía como "Antiguo Cuscatlán". Pedí una tabla con la distancia de cada ciudad al centro real (OpenStreetMap) para decidir con datos y no a ojo. Corregí San Salvador y acepté las otras 5, que estaban a menos de 0.5 km o tenían un nombre oficial distinto (San Francisco Gotera → "San Francisco"): ahí la diferencia era el etiquetado de OpenWeather, no un error de coordenadas. Aprendí que una coordenada "aproximada" generada por IA hay que verificarla siempre, y que un cambio de coordenadas se tiene que revisar con `git diff` antes del commit (en la iteración 5 entró por error la coordenada vieja de San Salvador y se corrigió después).
+
+## 2. El build depende de la API
+Como Next prerenderiza la home y los 14 detalles durante el build, `npm run build` llama a OpenWeather unas 42 veces. En la iteración 7 un corte de red hizo fallar el build, aunque el código estaba bien. Eso significa que en Vercel un deploy puede fallar si la API no responde o si falta la variable de entorno. Por eso el pronóstico se dejó bajo demanda (no suma llamadas al build) y en el README quedó claro que la variable se configura **antes** del primer deploy.
+
+## 3. La regla de ESLint sobre setState en efectos
+`react-hooks/set-state-in-effect` marcó el `setState` dentro del `useEffect` que restaura la unidad °C/°F desde `localStorage`. Se probó quitar la excepción y la regla falla. La decisión fue no apagar la regla en todo el proyecto: se dejó una excepción en **una sola línea**, con su justificación (leer `localStorage` después de hidratar es sincronizar con un sistema externo, el caso legítimo), y se eliminó un segundo efecto, guardando la preferencia en el clic. En /comparar se evitó el problema desde el diseño: la URL se lee al crear el estado y el efecto solo escribe en ella.
+
+## 4. De la credencial en web.config a la clave protegida
+En un proyecto anterior en .NET, cuando todavía no conocía las variables de entorno, dejé las credenciales de la base de datos escritas en el `web.config`, expuestas a cualquiera con acceso al código. En este proyecto la clave:
+- vive solo en `.env.local`, que está en `.gitignore`, y en las *Environment Variables* de Vercel, nunca en el repositorio;
+- no lleva el prefijo `NEXT_PUBLIC_`, así que Next no la incluye en el código del navegador;
+- solo la lee `src/lib/openweather.ts`, protegido con `import "server-only"`, y el navegador pasa por un Route Handler con lista blanca;
+- se verificó en cada iteración que "appid" no aparezca en el HTML ni en `.next/static`, y los logs nunca incluyen la URL con la clave.
+
+La diferencia no es solo técnica: antes la seguridad dependía de que nadie viera el archivo; ahora el diseño impide que la clave salga del servidor.
 
 
