@@ -69,7 +69,7 @@ export const DEPARTAMENTOS: readonly Departamento[] = [
     nombre: "San Salvador",
     zona: "central",
     // Corregida en la iteración 2: la anterior quedaba ~3 km al oeste (Antiguo Cuscatlán).
-    cabecera: { nombre: "San Salvador", lat: 13.6929, lon: -89.2182 },
+    cabecera: { nombre: "San Salvador", lat: 13.6976, lon: -89.1912 },
     ciudades: [
       { nombre: "Soyapango", lat: 13.71, lon: -89.1394 },
       { nombre: "Apopa", lat: 13.8072, lon: -89.1792 },

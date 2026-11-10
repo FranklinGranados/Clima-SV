@@ -112,4 +112,26 @@ ok continuemos ya esta el commit
 - Se detectó un cambio sin commit en `departamentos.ts`: la coordenada de San Salvador volvió a la que daba "Antiguo Cuscatlán". No se tocó; queda a confirmar.
 
 # Decision
+se aceptaron todos los cambios
 
+# Desafío: 
+al revisar, la coordenada de San Salvador no coincidía con su comentario de “corregida” por un cambio manual mío. Verifiqué el valor y lo dejé en el centro de la ciudad (13.6976, -89.1912).
+
+# Iteración 6 — /departamento/[nombre]/pronostico
+## Prompt
+considero que no es necesario extender las temperaturas en Ver ciudades y las pruebas de mi parte pasan, continua
+
+## Qué hizo Claude
+- Creó la página del pronóstico (servidor) con `getPronostico` + `agruparPorDia`, en `<Suspense>`, con sus `loading.tsx` y `error.tsx`.
+- Creó `PronosticoDias` (cliente): pestañas por día con `useState`, `useEffect` para centrar la pestaña en móvil y bloques de 3 h (vertical en móvil, en fila desde `md:`).
+- Creó `TarjetaDiaPronostico` (sin hooks) y `formatearFechaCorta`.
+- Creó `MensajeError` y refactorizó los `error.tsx` existentes para usarlo.
+- Verificación: `tsc`, `eslint` y `build` sin errores; los pronósticos de San Salvador y La Unión responden 200 con 5 días y 8 bloques, sin "appid".
+
+## Problemas
+- Un comando de bash con varios heredocs falló por una comilla y no escribió nada; se rehízo archivo por archivo con la herramienta de escritura.
+- El build mostró que el pronóstico no se prerenderiza: el `generateStaticParams` de la página padre no se hereda. Se dejó bajo demanda a propósito, para no sumar 14 llamadas a la API en cada build.
+- `grid-cols-6` dejaba una columna vacía cuando la API devuelve 5 días; se cambió a `flex-1`.
+
+# Decision
+se aceptaron los cambios, no hay observaciones

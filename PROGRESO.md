@@ -2,9 +2,9 @@
 
 Plan completo en [PLAN.md](PLAN.md). Reglas en [CLAUDE.md](CLAUDE.md).
 
-> **Punto de retorno (2026-11-09):** iteraciones 1–4 con commit (`20fe89e`); iteración 5 terminada, **pendiente de commit**.
-> Siguiente: **iteración 6** (/departamento/[nombre]/pronostico).
-> Para retomar en una sesión nueva: "lee CLAUDE.md, PLAN.md y PROGRESO.md y continúa con la iteración 6".
+> **Punto de retorno (2026-11-09):** iteraciones 1–5 con commit (`e60aef4`); iteración 6 terminada, **pendiente de commit**.
+> Siguiente: **iteración 7** (/comparar, hasta 4 departamentos).
+> Para retomar en una sesión nueva: "lee CLAUDE.md, PLAN.md y PROGRESO.md y continúa con la iteración 7".
 
 | # | Iteración | Estado |
 |---|---|---|
@@ -12,8 +12,8 @@ Plan completo en [PLAN.md](PLAN.md). Reglas en [CLAUDE.md](CLAUDE.md).
 | 2 | Capa de API segura + Route Handler + validación de coordenadas | ✅ Hecha (commit `053dbf4`) |
 | 3 | Layout, navegación y /acerca | ✅ Hecha (commit `03b055e`) |
 | 4 | Página principal + TanStack Query (precarga al pasar el puntero) | ✅ Hecha (commit `20fe89e`) |
-| 5 | /departamento/[nombre] | ✅ Hecha (pendiente de commit) |
-| 6 | /departamento/[nombre]/pronostico | ⏳ Pendiente |
+| 5 | /departamento/[nombre] | ✅ Hecha (commit `e60aef4`) |
+| 6 | /departamento/[nombre]/pronostico | ✅ Hecha (pendiente de commit) |
 | 7 | /comparar (hasta 4) | ⏳ Pendiente |
 | 8 | Pulido, README y build final | ⏳ Pendiente |
 
@@ -148,7 +148,33 @@ El campo temporal `nombreOW` se quitó de `ClimaResumen` y de `openweather.ts` a
 
 ### Pendiente / notas
 - **`/departamento/inexistente` muestra la página 404 en español, pero responde HTTP 200.** Con `cacheComponents`, el layout ya empezó a transmitirse cuando se llama a `notFound()`; la doc de `not-found.md` lo describe así y Next agrega `<meta name="robots" content="noindex">`. Si se quiere un 404 real, la opción es un `proxy.ts` que valide el slug antes de renderizar. Se propone para la iteración 8.
-- El selector °C/°F solo está en el detalle. La home y "Ver ciudades" siguen en °C (se puede extender en la iteración 8).
+- El selector °C/°F solo está en el detalle (y desde la iteración 6 en el pronóstico). **Decisión del usuario:** no extenderlo a la home ni a "Ver ciudades".
 - "Ver pronóstico de 5 días" da 404 hasta la iteración 6.
-- Falta probar en el navegador el cambio °C/°F y que se recuerde al recargar, y revisar el diseño en 375, 768 y 1280 px.
+- ~~Falta probar en el navegador~~: el usuario confirmó que sus pruebas pasan.
 - **Cambio sin commit en `src/lib/departamentos.ts`** (no lo hizo Claude): la cabecera de San Salvador volvió a `13.6929, -89.2182`. En la iteración 2 esa coordenada devolvía "Antiguo Cuscatlán" y se había corregido a `13.6976, -89.1912`. El usuario confirma si es intencional.
+
+---
+
+## Iteración 6 — /departamento/[nombre]/pronostico (2026-11-09)
+
+### Hecho
+- `src/app/departamento/[nombre]/pronostico/page.tsx` (servidor): `generateMetadata`, `notFound()` con la lista blanca, ruta de navegación (Inicio / Departamento / Pronóstico), selector °C/°F y el pronóstico en `<Suspense>`. Consulta `getPronostico` (1 llamada, caché de 10 min) y agrupa con `agruparPorDia`.
+- `…/pronostico/loading.tsx` (servidor) y `…/pronostico/error.tsx` (**cliente**, "Reintentar" y "Volver al departamento" con `useParams`).
+- `src/components/PronosticoDias.tsx` (**cliente**): pestañas por día (`useState`); `useEffect` centra la pestaña elegida en móvil. Panel con los bloques de 3 h: lista vertical en móvil y fila desde `md:`. Accesible con `role="tablist"`, `tab` y `tabpanel`.
+- `src/components/TarjetaDiaPronostico.tsx` (sin hooks): día, fecha corta, icono, máx./mín. y % de lluvia.
+- `src/components/MensajeError.tsx` (**cliente**): mensaje de error reutilizable. `src/app/error.tsx` y `src/app/departamento/[nombre]/error.tsx` se refactorizaron para usarlo (mismo texto y comportamiento).
+- `src/lib/formato.ts`: nueva función `formatearFechaCorta("2026-11-10")` → "10 nov".
+
+### Verificación
+- `tsc` ✅, `eslint` ✅, `next build` ✅.
+- Con `next start`: `/departamento/san-salvador/pronostico` y `/departamento/la-union/pronostico` responden 200 con 5 pestañas de días y 8 bloques de 3 h en el día inicial. `/departamento/xyz/pronostico` muestra la página 404 (con HTTP 200, igual que en la iteración 5). "appid" aparece 0 veces en el HTML y en `.next/static`.
+
+### Cambios respecto al plan
+- El pronóstico **no se prerenderiza por departamento**: el `generateStaticParams` de `page.tsx` del padre no se hereda a las páginas hijas (solo el de un layout). Se dejó así a propósito: la página se genera bajo demanda (shell estático + streaming) y queda en caché 10 min, y el build no gasta 14 llamadas más (sigue en 42).
+- Las pestañas usan `flex` con `flex-1` en vez de `grid-cols-6`, porque la API puede devolver 5 o 6 días según la hora.
+- Se agregó `MensajeError` para no repetir el mismo bloque en los 3 `error.tsx`.
+
+### Pendiente / notas
+- La primera visita a cada pronóstico muestra el skeleton un momento mientras llega la llamada; las siguientes (10 min) salen del caché.
+- Falta revisar en el navegador las pestañas en móvil (scroll horizontal) y escritorio.
+- `src/lib/departamentos.ts`: el commit `e60aef4` incluyó la coordenada de San Salvador `13.6929, -89.2182`; en la copia de trabajo el usuario ya la devolvió a la corregida `13.6976, -89.1912` (entra en el próximo commit).

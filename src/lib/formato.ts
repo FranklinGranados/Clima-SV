@@ -68,3 +68,13 @@ export function fechaIsoLocal(segundosUnix: number): string {
     timeZone: ZONA_HORARIA_SV,
   }).format(desdeUnix(segundosUnix));
 }
+
+/** Fecha corta a partir de "YYYY-MM-DD" (fecha local de El Salvador), ej. "9 nov". */
+export function formatearFechaCorta(fechaIso: string): string {
+  // Se fija el mediodía en UTC-6 para que el día no cambie al formatear en otra zona horaria.
+  return new Intl.DateTimeFormat(LOCALE, {
+    day: "numeric",
+    month: "short",
+    timeZone: ZONA_HORARIA_SV,
+  }).format(new Date(`${fechaIso}T12:00:00-06:00`));
+}
