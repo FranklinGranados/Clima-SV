@@ -142,7 +142,7 @@ git push origin master
 
 ## Despliegue
 
-- **URL pública:** _pendiente_
+- **URL pública:** [https://clima-sv.vercel.app](https://clima-sv.vercel.app)
 
 ## Seguridad de la API key
 

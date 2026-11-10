@@ -229,4 +229,4 @@ El campo temporal `nombreOW` se quitó de `ClimaResumen` y de `openweather.ts` a
 2. `proxy.ts` para que un slug inexistente responda HTTP 404 real (hoy muestra la página 404 con estado 200).
 3. Que el build no dependa de OpenWeather (por ejemplo, generar el detalle bajo demanda como el pronóstico).
 4. Revisión final de accesibilidad (contraste y foco).
-5. Poner la URL pública en el README después del primer deploy.
+5. ~~Poner la URL pública en el README~~: hecho, https://clima-sv.vercel.app (verificada: home y /api/clima responden 200).
