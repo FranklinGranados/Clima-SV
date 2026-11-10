@@ -15,6 +15,11 @@ export function redondearTemperatura(grados: number): number {
   return Object.is(redondeado, -0) ? 0 : redondeado;
 }
 
+/** Convierte °C a °F, redondeado a entero (para el selector de unidad). */
+export function celsiusAFahrenheit(celsius: number): number {
+  return redondearTemperatura((celsius * 9) / 5 + 32);
+}
+
 /** Convierte metros por segundo (units=metric) a km/h, redondeado. */
 export function msAKmh(metrosPorSegundo: number): number {
   return Math.round(metrosPorSegundo * 3.6);

@@ -2,17 +2,17 @@
 
 Plan completo en [PLAN.md](PLAN.md). Reglas en [CLAUDE.md](CLAUDE.md).
 
-> **Punto de retorno (2026-11-09):** iteraciones 1–3 con commit (`03b055e`); iteración 4 terminada, **pendiente de commit**.
-> Siguiente: **iteración 5** (/departamento/[nombre]).
-> Para retomar en una sesión nueva: "lee CLAUDE.md, PLAN.md y PROGRESO.md y continúa con la iteración 5".
+> **Punto de retorno (2026-11-09):** iteraciones 1–4 con commit (`20fe89e`); iteración 5 terminada, **pendiente de commit**.
+> Siguiente: **iteración 6** (/departamento/[nombre]/pronostico).
+> Para retomar en una sesión nueva: "lee CLAUDE.md, PLAN.md y PROGRESO.md y continúa con la iteración 6".
 
 | # | Iteración | Estado |
 |---|---|---|
 | 1 | Tipos y datos (sin UI) | ✅ Hecha |
 | 2 | Capa de API segura + Route Handler + validación de coordenadas | ✅ Hecha (commit `053dbf4`) |
 | 3 | Layout, navegación y /acerca | ✅ Hecha (commit `03b055e`) |
-| 4 | Página principal + TanStack Query (precarga al pasar el puntero) | ✅ Hecha (pendiente de commit) |
-| 5 | /departamento/[nombre] | ⏳ Pendiente |
+| 4 | Página principal + TanStack Query (precarga al pasar el puntero) | ✅ Hecha (commit `20fe89e`) |
+| 5 | /departamento/[nombre] | ✅ Hecha (pendiente de commit) |
 | 6 | /departamento/[nombre]/pronostico | ⏳ Pendiente |
 | 7 | /comparar (hasta 4) | ⏳ Pendiente |
 | 8 | Pulido, README y build final | ⏳ Pendiente |
@@ -122,3 +122,33 @@ El campo temporal `nombreOW` se quitó de `ClimaResumen` y de `openweather.ts` a
 - **Falta probar en el navegador** (no tengo uno en esta sesión): la precarga en DevTools → Network (un solo `GET /api/clima/<slug>` al pasar el puntero, ninguno si pasa en menos de 150 ms, y que el clic no repita la petición), y el diseño en 375, 768 y 1280 px.
 - "Ver detalle" lleva a `/departamento/[slug]`, que da 404 hasta la iteración 5.
 - Si una sola cabecera falla, se muestra `error.tsx` para toda la página (como dice el plan). Se puede cambiar por un aviso dentro de la tarjeta si lo prefieres.
+
+---
+
+## Iteración 5 — /departamento/[nombre] (2026-11-09)
+
+### Hecho
+- `src/app/departamento/[nombre]/page.tsx` (servidor): `generateStaticParams` (14 slugs), `generateMetadata` ("Clima en …") y `notFound()` si el slug no está en la lista blanca. Muestra la ruta de navegación, la zona, el selector °C/°F, el enlace al pronóstico, el detalle de la cabecera y las 2 ciudades (cada bloque en su `<Suspense>`).
+- `src/app/departamento/[nombre]/loading.tsx` (servidor) y `error.tsx` (**cliente**, "Reintentar" con `retry()` y "Volver al inicio").
+- `src/components/DetalleClima.tsx` (servidor): temperatura, descripción, hora de actualización y 6 métricas (sensación, humedad, viento, mín./máx., amanecer, atardecer). Grilla de 2, 3 o 6 columnas según el ancho.
+- `src/components/TarjetaCiudad.tsx` (servidor async): clima de una ciudad (1 llamada).
+- `src/components/providers/UnidadProvider.tsx` (**cliente**): unidad °C/°F con `useState`; `useEffect` la restaura de `localStorage` al montar y se guarda al cambiarla. Va en `layout.tsx`.
+- `src/components/SelectorUnidad.tsx` (**cliente**): botones °C/°F (`aria-pressed`, 44 px).
+- `src/components/Temperatura.tsx` (**cliente**): muestra °C o °F según la preferencia.
+- `src/lib/formato.ts`: nueva función `celsiusAFahrenheit`.
+
+### Verificación
+- `tsc` ✅, `eslint` ✅, `next build` ✅: los 14 departamentos se prerenderizan con revalidación cada 10 min.
+- Con `next start`: `/departamento/san-salvador` y `/departamento/morazan` responden 200 con su título, el detalle y sus 2 ciudades. "appid" aparece 0 veces en el HTML y en `.next/static`.
+
+### Cambios respecto al plan
+- Se agregó `UnidadProvider` (contexto). Sin él, cada `<Temperatura>` tendría su propio estado y el selector no podría cambiarlas todas a la vez.
+- `eslint` (`react-hooks/set-state-in-effect`) marca el `setState` dentro del `useEffect` que restaura `localStorage`. Se dejó un `eslint-disable` en esa sola línea, justificado: leer `localStorage` después de hidratar es el caso de uso legítimo (sincronizar con un sistema externo) y el plan pide `useEffect`. Guardar se hace en el evento del clic, no en un efecto.
+- Con `cacheComponents` no existe `dynamicParams = false`; la lista blanca se valida con `getDepartamento` + `notFound()`.
+
+### Pendiente / notas
+- **`/departamento/inexistente` muestra la página 404 en español, pero responde HTTP 200.** Con `cacheComponents`, el layout ya empezó a transmitirse cuando se llama a `notFound()`; la doc de `not-found.md` lo describe así y Next agrega `<meta name="robots" content="noindex">`. Si se quiere un 404 real, la opción es un `proxy.ts` que valide el slug antes de renderizar. Se propone para la iteración 8.
+- El selector °C/°F solo está en el detalle. La home y "Ver ciudades" siguen en °C (se puede extender en la iteración 8).
+- "Ver pronóstico de 5 días" da 404 hasta la iteración 6.
+- Falta probar en el navegador el cambio °C/°F y que se recuerde al recargar, y revisar el diseño en 375, 768 y 1280 px.
+- **Cambio sin commit en `src/lib/departamentos.ts`** (no lo hizo Claude): la cabecera de San Salvador volvió a `13.6929, -89.2182`. En la iteración 2 esa coordenada devolvía "Antiguo Cuscatlán" y se había corregido a `13.6976, -89.1912`. El usuario confirma si es intencional.

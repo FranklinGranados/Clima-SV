@@ -94,4 +94,22 @@ commit realizado, continua
 - No se pudo probar la precarga al pasar el puntero en un navegador real desde esta sesión; queda para revisión manual en DevTools → Network.
 
 # Decision
+Se ha aceptado la manera en que claude aplico tanstack query, y se ha comprobado por primera vez el proyecto 
+
+# Iteración 5 — /departamento/[nombre]
+## Prompt
+ok continuemos ya esta el commit
+
+## Qué hizo Claude
+- Creó la página de detalle con `generateStaticParams` (14 departamentos prerenderizados), `generateMetadata` y `notFound()` para slugs que no están en la lista blanca.
+- Creó `DetalleClima` (6 métricas de la cabecera) y `TarjetaCiudad` (cada ciudad en su `<Suspense>`), además de `loading.tsx` y `error.tsx` del segmento.
+- Creó el cambio °C/°F: `UnidadProvider` (`useState` + `useEffect` con `localStorage`), `SelectorUnidad` y `Temperatura`, y la función `celsiusAFahrenheit`.
+- Verificación: `tsc`, `eslint` y `build` sin errores; las páginas de San Salvador y Morazán responden 200 con su contenido y sin "appid".
+
+## Problemas
+- `eslint` marca `setState` dentro de `useEffect` (`react-hooks/set-state-in-effect`). Se probó quitar la excepción y la regla falla; se dejó un `eslint-disable` en una sola línea, justificado: restaurar `localStorage` después de hidratar es el caso legítimo. Se quitó un segundo efecto: la unidad se guarda al hacer clic.
+- Con `cacheComponents`, `dynamicParams` no existe, y un slug inexistente muestra la página 404 pero con estado HTTP 200 (el layout ya se estaba transmitiendo). Queda propuesto un `proxy.ts` para la iteración 8.
+- Se detectó un cambio sin commit en `departamentos.ts`: la coordenada de San Salvador volvió a la que daba "Antiguo Cuscatlán". No se tocó; queda a confirmar.
+
+# Decision
 
