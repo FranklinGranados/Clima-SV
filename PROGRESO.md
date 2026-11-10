@@ -2,16 +2,16 @@
 
 Plan completo en [PLAN.md](PLAN.md). Reglas en [CLAUDE.md](CLAUDE.md).
 
-> **Punto de retorno (2026-11-09):** iteraciones 1 y 2 con commit (`053dbf4`); iteración 3 terminada, **pendiente de commit**.
-> Siguiente: **iteración 4** (página principal + TanStack Query).
-> Para retomar en una sesión nueva: "lee CLAUDE.md, PLAN.md y PROGRESO.md y continúa con la iteración 4".
+> **Punto de retorno (2026-11-09):** iteraciones 1–3 con commit (`03b055e`); iteración 4 terminada, **pendiente de commit**.
+> Siguiente: **iteración 5** (/departamento/[nombre]).
+> Para retomar en una sesión nueva: "lee CLAUDE.md, PLAN.md y PROGRESO.md y continúa con la iteración 5".
 
 | # | Iteración | Estado |
 |---|---|---|
 | 1 | Tipos y datos (sin UI) | ✅ Hecha |
 | 2 | Capa de API segura + Route Handler + validación de coordenadas | ✅ Hecha (commit `053dbf4`) |
-| 3 | Layout, navegación y /acerca | ✅ Hecha (pendiente de commit) |
-| 4 | Página principal + TanStack Query (precarga al pasar el puntero) | ⏳ Pendiente |
+| 3 | Layout, navegación y /acerca | ✅ Hecha (commit `03b055e`) |
+| 4 | Página principal + TanStack Query (precarga al pasar el puntero) | ✅ Hecha (pendiente de commit) |
 | 5 | /departamento/[nombre] | ⏳ Pendiente |
 | 6 | /departamento/[nombre]/pronostico | ⏳ Pendiente |
 | 7 | /comparar (hasta 4) | ⏳ Pendiente |
@@ -88,5 +88,37 @@ El campo temporal `nombreOW` se quitó de `ClimaResumen` y de `openweather.ts` a
 
 ### Pendiente / notas
 - `/comparar` responde 404 hasta la iteración 7 (el enlace del menú ya existe).
-- `src/app/page.tsx` sigue siendo la plantilla de create-next-app; se reemplaza en la iteración 4.
+- ~~`src/app/page.tsx` era la plantilla~~: reemplazada en la iteración 4.
 - Falta la revisión visual en 375 / 768 / 1280 px con DevTools (no tengo navegador en esta sesión).
+
+---
+
+## Iteración 4 — Página principal + TanStack Query (2026-11-09)
+
+### Hecho
+- Instalado `@tanstack/react-query@5.107.1` (versión exacta, verificada en npm: MIT, modificada el 2026-11-06, peer React ^19). `npm audit --omit=dev`: 0 vulnerabilidades.
+- `src/app/page.tsx` (servidor): 14 departamentos agrupados por zona. Cada tarjeta va en su propio `<Suspense>` con `TarjetaSkeleton`.
+- `src/components/TarjetaDepartamento.tsx` (servidor async): clima de la cabecera (1 llamada), nombres de las 2 ciudades, "Ver ciudades" y "Ver detalle".
+- `src/components/TarjetaSkeleton.tsx`, `src/components/IconoClima.tsx` (`next/image` con `sizes`).
+- `src/components/BuscadorDepartamentos.tsx` (**cliente**, `useState`): filtra por departamento, cabecera o ciudad, ignorando tildes. Recibe las tarjetas ya renderizadas en el servidor, así que filtrar no vuelve a pedir el clima.
+- `src/components/providers/QueryProvider.tsx` (**cliente**): `QueryClient` en `useState`, `staleTime` 10 min, `retry: 1`, sin refetch al enfocar la ventana. Envuelve el `<main>` en `layout.tsx`.
+- `src/lib/consultasClima.ts`: `climaKeys`, `fetchClimaDepartamento` (solo llama a `/api/clima/[slug]`) y `opcionesClimaDepartamento`.
+- `src/hooks/usePrefetchHover.ts` (**cliente**): precarga a los 150 ms con mouse, foco o toque; cancela si el puntero sale antes y limpia el temporizador al desmontar (`useEffect`).
+- `src/components/VerCiudades.tsx` (**cliente**): precarga al pasar el puntero y al hacer clic despliega las 2 ciudades con `useQuery` (estados de carga, error y "Reintentar").
+- `src/app/loading.tsx` (skeleton global) y `src/app/error.tsx` (**cliente**, botón "Reintentar" con `retry()`, sin mostrar detalles técnicos).
+- `next.config.ts`: `images.remotePatterns` solo para `https://openweathermap.org/img/wn/**`.
+
+### Verificación
+- `tsc --noEmit` ✅, `eslint src` ✅, `next build` ✅. `/` queda **estática con revalidación cada 10 min** (`Revalidate 10m` en el build).
+- Con `next start`: `/` 200 con 14 tarjetas, 14 temperaturas y 4 zonas; el icono vía `/_next/image` responde 200 `image/png`; `/api/clima/santa-ana` 200; `/api/clima/xyz` 404.
+- "appid" aparece 0 veces en el HTML de la home y 0 en `.next/static`.
+
+### Cambios respecto al plan
+- Se agregó `opcionesClimaDepartamento()` en `consultasClima.ts` para reutilizar `queryKey` + `queryFn` en `useQuery`, `prefetchQuery` y (en la iteración 7) `useQueries`.
+- El buscador también encuentra por nombre de ciudad, no solo de departamento.
+- Se instaló con `--save-exact` para fijar la versión autorizada.
+
+### Pendiente / notas
+- **Falta probar en el navegador** (no tengo uno en esta sesión): la precarga en DevTools → Network (un solo `GET /api/clima/<slug>` al pasar el puntero, ninguno si pasa en menos de 150 ms, y que el clic no repita la petición), y el diseño en 375, 768 y 1280 px.
+- "Ver detalle" lleva a `/departamento/[slug]`, que da 404 hasta la iteración 5.
+- Si una sola cabecera falla, se muestra `error.tsx` para toda la página (como dice el plan). Se puede cambiar por un aviso dentro de la tarjeta si lo prefieres.

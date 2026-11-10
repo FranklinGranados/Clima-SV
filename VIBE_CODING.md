@@ -75,3 +75,23 @@ lee CLAUDE.md, PLAN.md y PROGRESO.md y continúa con la iteración 3
 
 # Decision
 Se aprobo a claude realizar pruebas con las paginas nuevas
+
+# Iteración 4 — Página principal + TanStack Query
+## Prompt
+commit realizado, continua
+
+## Qué hizo Claude
+- Verificó `@tanstack/react-query@5.107.1` en npm y lo instaló con versión exacta (ya estaba autorizado).
+- Reemplazó la home por los 14 departamentos agrupados por zona. Cada tarjeta es un Server Component async en su propio `<Suspense>` y consulta solo la cabecera.
+- Creó el buscador (cliente, `useState`). Filtra tarjetas que ya vienen renderizadas desde el servidor, sin volver a llamar a la API.
+- Creó `QueryProvider`, `consultasClima.ts`, el hook `usePrefetchHover` (150 ms, mouse/foco/toque) y `VerCiudades` (`useQuery` al desplegar).
+- Creó `loading.tsx` y `error.tsx` (con `retry()`), y permitió en `next.config.ts` solo los iconos de OpenWeather.
+- Verificación: `tsc`, `eslint` y `build` sin errores; con `next start`, la home muestra 14 temperaturas, los iconos cargan, y "appid" no aparece en el HTML ni en `.next/static`.
+
+## Problemas
+- El buscador es de cliente, pero las tarjetas son de servidor. Se resolvió pasando las tarjetas ya renderizadas como prop (`ReactNode`): el cliente solo decide cuáles mostrar.
+- `npm install` avisó de vulnerabilidades en dependencias de desarrollo; en producción hay 0 (`npm audit --omit=dev`). No se tocaron.
+- No se pudo probar la precarga al pasar el puntero en un navegador real desde esta sesión; queda para revisión manual en DevTools → Network.
+
+# Decision
+
